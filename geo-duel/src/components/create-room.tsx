@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ReactDOM from "react-dom";
+import '../interface/create-room.css';
 
 type CreateRoom = {
   username: string;
@@ -11,15 +11,13 @@ type CreateRoom = {
 };
 
 export function MyForm() {
-  let createRoomInputs: CreateRoom;
-
   const [inputs, setInputs] = useState<CreateRoom>({
-    username: 'user0',
-    roomName: 'room0',
-    playersNumber: 2,
-    placesNumber: 2,
-    pickingTime: 2,
-    guessingTime: 2,
+    username: '',
+    roomName: '',
+    playersNumber: 0,
+    placesNumber: 0,
+    pickingTime: 0,
+    guessingTime: 0,
   });
 
   const handleChange = (event: any) => {
@@ -30,11 +28,13 @@ export function MyForm() {
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    alert(inputs);
+    alert(inputs.roomName);
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div className="container">
+    <form id="contact" onSubmit={handleSubmit}>
+    <h3>Create a Match Room</h3>
       <label>Your Name:
       <input 
         type="text" 
@@ -83,7 +83,8 @@ export function MyForm() {
           onChange={handleChange}
         />
         </label>
-        <input type="submit" />
+        <button type="submit" id="contact-submit">Submit</button>
     </form>
+    </div>
   )
 }

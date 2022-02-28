@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-import { HomeForm } from './pages/room';
+import { HomeForm, EnterRoom } from './pages/room';
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/createroom" element= {<HomeForm/>} />
+        <Route path="/play" element= {<EnterRoom/>} />
       </Routes>
     </Router>
   );
