@@ -1,5 +1,27 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Link } from 'react-router-dom';
 import '../interface/create-room.css';
+
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/analytics';
+import { getFirestore } from "firebase/firestore"
+import { doc, setDoc, addDoc, updateDoc, deleteDoc, deleteField } from "firebase/firestore";
+
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+
+firebase.initializeApp({
+  apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
+  authDomain: "geoduel-dc6b2.firebaseapp.com",
+  projectId: "geoduel-dc6b2",
+  storageBucket: "geoduel-dc6b2.appspot.com",
+  messagingSenderId: "863497247016",
+  appId: "1:863497247016:web:d1b3082d2cc526353bd81d",
+  measurementId: "G-DNZY4K9H73"
+})
+
+const db = getFirestore();
+
 
 type CreateRoom = {
   username: string;
@@ -20,6 +42,19 @@ export function MyForm() {
     guessingTime: 0,
   });
 
+  const createRoomInFirestore = async (event: any) => {
+    event.preventDefault();
+
+    await setDoc(doc(db, "matches", inputs.roomName), {
+      players: inputs.playersNumber,
+      places: inputs.placesNumber,
+      pickingTime: inputs.pickingTime,
+      guessingTime: inputs.guessingTime,
+    });
+
+    window.location.href = "/play"
+  }
+
   const handleChange = (event: any) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -33,7 +68,7 @@ export function MyForm() {
 
   return (
     <div className="container">
-    <form id="contact" onSubmit={handleSubmit}>
+    <form id="contact" onSubmit={createRoomInFirestore}>
     <h3>Create a Match Room</h3>
       <label>Your Name:
       <input 
@@ -83,7 +118,7 @@ export function MyForm() {
           onChange={handleChange}
         />
         </label>
-        <button type="submit" id="contact-submit">Submit</button>
+        <button type="submit" id="contact-submit">Create Room</button>
     </form>
     </div>
   )

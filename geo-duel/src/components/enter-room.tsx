@@ -43,7 +43,7 @@ export function EnterRoomForm() {
         onChange={handleChange}
       />
       </label>
-        <button type="submit" id="contact-submit">Submit</button>
+        <button type="submit" id="contact-submit">Enter Room</button>
     </form>
     </div>
   )
