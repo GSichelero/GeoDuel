@@ -51,9 +51,17 @@ export function MyForm() {
       places: inputs.placesNumber,
       pickingTime: inputs.pickingTime,
       guessingTime: inputs.guessingTime,
-      [inputs.username]: {
-        [`aaaa${inputs.playersNumber}`]: 10,
-        location: new firebase.firestore.GeoPoint(10, 13),
+      playersInfo: {
+        [inputs.username]: {
+          guessings: {
+            guess1: new firebase.firestore.GeoPoint(10, 13),
+            guess2: new firebase.firestore.GeoPoint(10, 14),
+          },
+          pickings: {
+            pick1: new firebase.firestore.GeoPoint(12, 15),
+            pick2: new firebase.firestore.GeoPoint(13, 22),
+          }
+        }
       }
     });
 
