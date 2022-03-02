@@ -47,6 +47,15 @@ body {
   margin-bottom: 10px;
 }
 
+h1 {
+  color: white;
+  margin: 100px 0 50px 0
+}
+
+h2 {
+  color: white;
+}
+
 label {
   border: medium none !important;
   margin: 0 0 10px;

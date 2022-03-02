@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import '../interface/create-room.css';
 
 import firebase from 'firebase/compat/app';
@@ -9,6 +9,7 @@ import { getFirestore } from "firebase/firestore"
 import { doc, setDoc, addDoc, updateDoc, deleteDoc, deleteField } from "firebase/firestore";
 
 import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { render } from "react-dom";
 
 firebase.initializeApp({
   apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
@@ -50,9 +51,13 @@ export function MyForm() {
       places: inputs.placesNumber,
       pickingTime: inputs.pickingTime,
       guessingTime: inputs.guessingTime,
+      [inputs.username]: {
+        [`aaaa${inputs.playersNumber}`]: 10,
+        location: new firebase.firestore.GeoPoint(10, 13),
+      }
     });
 
-    window.location.href = "/play"
+    window.location.href = `/match?player=${inputs.username}&room=${inputs.roomName}`
   }
 
   const handleChange = (event: any) => {
