@@ -136,3 +136,35 @@ label {
 :-ms-input-placeholder {
   color: #888;
 }
+
+/* #root, html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+} */
+
+#mapsContainer {
+  height: 100vh;
+}
+
+#map {
+  height: 80%;
+  width: 40%;
+  float: left;
+  padding: 20px;
+  border: 1px solid white;
+}
+
+#pano {
+  height: 80%;
+  width: 60%;
+  float: right;
+  padding: 20px;
+  border: 1px solid white;
+}
+
+#mapStreet {
+  height: 600px;
+  width: 600px;
+  margin: 0;
+}

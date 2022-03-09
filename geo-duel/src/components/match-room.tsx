@@ -1,5 +1,4 @@
-import { useRef, useState } from "react";
-import { Link } from 'react-router-dom';
+import React, { useRef, useState, createElement, Component, useEffect } from "react";
 import '../interface/create-room.css';
 
 import firebase from 'firebase/compat/app';
@@ -7,8 +6,11 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
 import { getFirestore, doc, getDoc } from "firebase/firestore"
 import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
+import { RenderMap, RenderMapStreet, RenderStreetView } from '../components/map';
 
 import { useCollectionData } from 'react-firebase-hooks/firestore';
+
+import { Map, GoogleApiWrapper } from 'google-maps-react';
 
 firebase.initializeApp({
   apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
@@ -55,9 +57,6 @@ export function MatchRoom() {
             console.log(key, docData[key]);
           });
 
-        // let locat = 'location';
-        // console.log(docData?.GSichelero.location._lat);
-        // console.log(docData?.GSichelero[locat]['_long']);
         if (playersConnected != playersPreviouslyConnected) {
             const values: Room = {
                 players: docData?.players,
@@ -71,23 +70,6 @@ export function MatchRoom() {
         }
     });
 
-    // const getValues = async (event: any) => {
-    //     event.preventDefault();
-    //     const docRef = doc(db, "matches", roomName);
-    //     const docSnap = await getDoc(docRef);
-    //     const docData = docSnap.data();
-    
-    //     const values: Room = {
-    //         players: docData?.players,
-    //         places: docData?.places,
-    //         pickingTime: docData?.pickingTime,
-    //         guessingTime: docData?.guessingTime,
-    //         playersInfo: docData?.playersInfo
-    //     }
-
-    //     setRoomValues(values);
-    // }
-
     if (Object.keys(roomValues.playersInfo).length < roomValues.players) {
         let playersNames: Array<string> = []
         Object.keys(roomValues.playersInfo).forEach(function(key) {
@@ -98,25 +80,23 @@ export function MatchRoom() {
         return (
             <div className="container">
         
-            <h1>Waiting for all players to connect...</h1>
-            <img src={"globe-spinning.gif"} alt="this slowpoke moves"  width="320" />
-            <h2>Players connected: {playersNames.toString()}</h2>
-            <h2>Total players: {roomValues.players}</h2>
-            <h2>Places: {roomValues.places}</h2>
-            <h2>Time of the picking phase: {roomValues.pickingTime} minutes</h2>
-            <h2>Time of the guessing phase: {roomValues.guessingTime} minutes</h2>
-        
-        </div>
+                <h1>Waiting for all players to connect...</h1>
+                <img src={"globe-spinning.gif"} alt="this slowpoke moves"  width="320" />
+                <h2>Players connected: {playersNames.toString()}</h2>
+                <h2>Total players: {roomValues.players}</h2>
+                <h2>Places: {roomValues.places}</h2>
+                <h2>Time of the picking phase: {roomValues.pickingTime} minutes</h2>
+                <h2>Time of the guessing phase: {roomValues.guessingTime} minutes</h2>
+            
+            </div>
         )
     }
     else {
         return (
-            <div className="container">
-            
-                <h1>Waiting for all players to connect...</h1>
-                <h2>All players connected: {roomValues.players}</h2>
-                <img src={"globe-spinning.gif"} alt="this slowpoke moves"  width="320" />
-            
+            <div>
+                {/* <RenderMap />
+                <RenderStreetView /> */}
+                <RenderMapStreet />
             </div>
         )
     }
