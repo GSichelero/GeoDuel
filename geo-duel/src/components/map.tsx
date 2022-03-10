@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, ReactElement } from "react";
+import React, { useEffect, useRef, useState, ReactElement } from "react";
 import ReactDOM from "react-dom";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
@@ -57,13 +57,16 @@ function MyMapStreetComponent({
 }) {
   const refMap: any = useRef();
   const refPano: any = useRef();
+  const [streetLocation, setstreetLocation] = useState<google.maps.LatLng | null>();
+  let map;
+  let panorama;
 
   useEffect(() => {
-    const map = new window.google.maps.Map(refMap.current, {
+    map = new window.google.maps.Map(refMap.current, {
       center: fenway,
       zoom: 14
     });
-    const panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
+    panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
       position: fenway,
       pov: {
         heading: 34,
@@ -73,10 +76,17 @@ function MyMapStreetComponent({
     map.setStreetView(panorama);
   });
 
+  function updateLocation() {
+    console.log(panorama.getPosition());
+    setstreetLocation(panorama.getPosition());
+  }
+
   return (
     <div id="mapsContainer">
       <div ref={refMap} id="map" />
       <div ref={refPano} id="pano" />
+      <h2>{String(streetLocation)}</h2>
+      <button onClick={updateLocation!}>Get Location!</button>
     </div>
   );
 }
