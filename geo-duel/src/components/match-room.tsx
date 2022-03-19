@@ -96,7 +96,7 @@ export function MatchRoom() {
             <div>
                 {/* <RenderMap />
                 <RenderStreetView /> */}
-                <RenderMapStreet />
+                <RenderMapStreet round_number={1} />
             </div>
         )
     }

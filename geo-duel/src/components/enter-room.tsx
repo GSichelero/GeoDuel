@@ -41,10 +41,7 @@ export function EnterRoomForm() {
 
     await setDoc(doc(db, "matches", inputs.roomName), {
       playersInfo: {
-        [inputs.username]: {
-          guessings: {},
-          pickings: {},
-        }
+        [inputs.username]: {}
       }
     }, { merge: true });
 

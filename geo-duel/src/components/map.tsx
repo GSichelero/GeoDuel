@@ -2,6 +2,25 @@ import React, { useEffect, useRef, useState, ReactElement } from "react";
 import ReactDOM from "react-dom";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/analytics';
+import { getFirestore, doc, getDoc } from "firebase/firestore"
+import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
+
+firebase.initializeApp({
+  apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
+  authDomain: "geoduel-dc6b2.firebaseapp.com",
+  projectId: "geoduel-dc6b2",
+  storageBucket: "geoduel-dc6b2.appspot.com",
+  messagingSenderId: "863497247016",
+  appId: "1:863497247016:web:d1b3082d2cc526353bd81d",
+  measurementId: "G-DNZY4K9H73"
+})
+const firestore = firebase.firestore();
+
+const db = getFirestore();
+
 const search = window.location.search;
 const params = new URLSearchParams(search); 
 const roomName = String(params.get('room'));
@@ -15,7 +34,6 @@ const icons = [
   'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
   'http://maps.google.com/mapfiles/ms/icons/pink-dot.png',
   'http://maps.google.com/mapfiles/ms/icons/orange-dot.png',
-  'http://maps.google.com/mapfiles/ms/icons/lightblue-dot.png',
 ]
 const random = Math.floor(Math.random() * icons.length);
 
@@ -67,18 +85,31 @@ function MyStreetViewComponent({
   return <div ref={ref} id="pano" />;
 }
 
+
+// ############################################ Picking Phase ############################################
+// ############################################ Picking Phase ############################################
+// ############################################ Picking Phase ############################################
+// ############################################ Picking Phase ############################################
+// ############################################ Picking Phase ############################################
+// ############################################ Picking Phase ############################################
+
+
 let updated = false;
 let map;
 let panorama;
 let marker;
+let round_number: number;
 function MyMapStreetComponent({
   fenway,
+  round
 }: {
   fenway: google.maps.LatLngLiteral;
+  round: number;
 }) {
   const refMap: any = useRef();
   const refPano: any = useRef();
   const [streetLocation, setstreetLocation] = useState<google.maps.LatLng | null>();
+  round_number = round;
 
   useEffect(() => {
     if (!updated) {
@@ -107,7 +138,41 @@ function MyMapStreetComponent({
     }
   });
 
-  function updateLocation() {
+  async function updateLocation() {
+    const selectedPosition = panorama.getPosition();
+    setstreetLocation(selectedPosition);
+    if (marker) {
+      marker.setMap(null);
+      marker = null;
+    }
+    marker = new google.maps.Marker({
+      position: selectedPosition,
+      title:"Pick",
+      label: {
+        text: playerName,
+        fontWeight: 'bold'
+      },
+      icon: {
+        url: icons[random],
+        labelOrigin: new window.google.maps.Point(8, -5)
+      }
+    });
+    marker.setMap(map);
+    updated = true;
+
+    await setDoc(doc(db, "matches", roomName), {
+      playersInfo: {
+        [playerName]: {
+          [`${String(round_number["round_number"])}`]: {
+            guessings: {},
+            picking: new firebase.firestore.GeoPoint(selectedPosition.lat(), selectedPosition.lng()),
+          }
+        }
+      }
+    }, { merge: true });
+  }
+
+  function iAmReady() {
     const selectedPosition = panorama.getPosition();
     setstreetLocation(selectedPosition);
     if (marker) {
@@ -135,10 +200,49 @@ function MyMapStreetComponent({
       <div ref={refMap} id="map" />
       <div ref={refPano} id="pano" />
       <h2>{String(streetLocation)}</h2>
-      <button onClick={updateLocation!}>Choose Location!</button>
+      <button onClick={updateLocation!}>Select Location!</button>
+      <button onClick={iAmReady!}>I am Ready!!!</button>
     </div>
   );
 }
+
+export function RenderMapStreet(round_number) {
+  const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
+  return (
+    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
+      <MyMapStreetComponent fenway={fenway} round={round_number}/>
+    </Wrapper>
+  );
+}
+
+
+// ############################################ Guessing Phase ############################################
+// ############################################ Guessing Phase ############################################
+// ############################################ Guessing Phase ############################################
+// ############################################ Guessing Phase ############################################
+// ############################################ Guessing Phase ############################################
+// ############################################ Guessing Phase ############################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export function RenderMap() {
   const center = { lat: -34.397, lng: 150.644 };
@@ -157,15 +261,6 @@ export function RenderStreetView() {
   return (
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
       <MyStreetViewComponent position={position} heading={heading} pitch={pitch} />
-    </Wrapper>
-  );
-}
-
-export function RenderMapStreet() {
-  const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
-  return (
-    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
-      <MyMapStreetComponent fenway={fenway}/>
     </Wrapper>
   );
 }
