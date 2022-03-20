@@ -7,6 +7,7 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
 import { getFirestore, doc, getDoc } from "firebase/firestore"
 import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
+import { any, bool } from "prop-types";
 
 firebase.initializeApp({
   apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
@@ -99,12 +100,15 @@ let map;
 let panorama;
 let marker;
 let round_number: number;
+let selectedLocation: any;
 function MyMapStreetComponent({
   fenway,
-  round
+  round,
+  pickingTime
 }: {
   fenway: google.maps.LatLngLiteral;
   round: number;
+  pickingTime: any;
 }) {
   const refMap: any = useRef();
   const refPano: any = useRef();
@@ -141,40 +145,7 @@ function MyMapStreetComponent({
   async function updateLocation() {
     const selectedPosition = panorama.getPosition();
     setstreetLocation(selectedPosition);
-    if (marker) {
-      marker.setMap(null);
-      marker = null;
-    }
-    marker = new google.maps.Marker({
-      position: selectedPosition,
-      title:"Pick",
-      label: {
-        text: playerName,
-        fontWeight: 'bold'
-      },
-      icon: {
-        url: icons[random],
-        labelOrigin: new window.google.maps.Point(8, -5)
-      }
-    });
-    marker.setMap(map);
-    updated = true;
-
-    await setDoc(doc(db, "matches", roomName), {
-      playersInfo: {
-        [playerName]: {
-          [`${String(round_number["round_number"])}`]: {
-            guessings: {},
-            picking: new firebase.firestore.GeoPoint(selectedPosition.lat(), selectedPosition.lng()),
-          }
-        }
-      }
-    }, { merge: true });
-  }
-
-  function iAmReady() {
-    const selectedPosition = panorama.getPosition();
-    setstreetLocation(selectedPosition);
+    selectedLocation = selectedPosition;
     if (marker) {
       marker.setMap(null);
       marker = null;
@@ -199,19 +170,59 @@ function MyMapStreetComponent({
     <div id="mapsContainer">
       <div ref={refMap} id="map" />
       <div ref={refPano} id="pano" />
-      <h2>{String(streetLocation)}</h2>
-      <button onClick={updateLocation!}>Select Location!</button>
-      <button onClick={iAmReady!}>I am Ready!!!</button>
+      <button className="select" onClick={updateLocation!}>Select Location!</button>
     </div>
   );
 }
 
-export function RenderMapStreet(round_number) {
+let stopCount: boolean = false;
+function CalculateTimeLeft(round, pickingTime) {
+  round_number = round;
+  const [seconds, setSeconds]: any = useState(round["round"]["pickingTime"] * 60);
+  useEffect(() => {
+    if (seconds > 0 && !stopCount) {
+      setTimeout(() => setSeconds(seconds - 1), 1000);
+    } else if (seconds == 0) {
+      stopCount = true;
+      setSeconds('###### Your chosen location was sent! ######');
+      setDoc(doc(db, "matches", roomName), {
+        playersInfo: {
+          [playerName]: {
+            [`${String(round["round"]["round_number"])}`]: {
+              guessings: {},
+              picking: new firebase.firestore.GeoPoint(selectedLocation.lat(), selectedLocation.lng()),
+            }
+          }
+        }
+      }, { merge: true });
+    }
+    else {
+      setSeconds('###### Your chosen location was sent! ######');
+    }
+  });
+
+  function iAmReady() {
+    stopCount = true;
+    setSeconds(0);
+  }
+
+  return (
+    <div>
+      <h2>{`Time left: ${seconds} seconds!`}</h2>
+      <button className="ready" onClick={iAmReady!}>I am Ready!!!</button>
+    </div>
+  );
+}
+
+export function RenderMapStreet(round_number, pickingTime) {
   const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
   return (
+    <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
-      <MyMapStreetComponent fenway={fenway} round={round_number}/>
+      <MyMapStreetComponent fenway={fenway} round={round_number} pickingTime={pickingTime}/>
+      <CalculateTimeLeft round={round_number} pickingTime={pickingTime}/>
     </Wrapper>
+    </div>
   );
 }
 

@@ -4,7 +4,7 @@ import '../interface/create-room.css';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
-import { getFirestore, doc, getDoc } from "firebase/firestore"
+import { getFirestore, doc, getDoc, getDocFromServer } from "firebase/firestore"
 import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
 import { RenderMap, RenderMapStreet, RenderStreetView } from '../components/map';
 
@@ -53,9 +53,9 @@ export function MatchRoom() {
         const docData: any = doc.data();
         const playersConnected = Object.keys(docData?.playersInfo).length;
 
-        Object.keys(docData).forEach(function(key) {
-            console.log(key, docData[key]);
-          });
+        // Object.keys(docData).forEach(function(key) {
+        //     console.log(key, docData[key]);
+        //   });
 
         if (playersConnected != playersPreviouslyConnected) {
             const values: Room = {
@@ -91,12 +91,21 @@ export function MatchRoom() {
             </div>
         )
     }
-    else {
+    else if (Object.keys(roomValues.playersInfo).length > roomValues.players) {
         return (
             <div>
                 {/* <RenderMap />
                 <RenderStreetView /> */}
-                <RenderMapStreet round_number={1} />
+                <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} />
+            </div>
+        )
+    }
+    else {
+        return (
+            <div>
+                <RenderMap />
+                {/* <RenderStreetView /> */}
+                {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}
             </div>
         )
     }
