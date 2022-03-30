@@ -41,7 +41,7 @@ const playerName = String(params.get('player'));
 
 let currentRound = 1;
 let currentPlayer = 0;
-let currentStage = 'picking';
+let currentStage = 'loading';
 // let pickingStage = true;
 // let guessingStage = false;
 // let resultsStage = false;
@@ -78,10 +78,14 @@ export function MatchRoom() {
                 guessingTime: docData?.guessingTime,
                 playersInfo: docData?.playersInfo
             }
-    
             setRoomValues(values);
         }
-        else if (count_players_picking == docData.players && currentStage == 'picking') {
+
+        if (count_players_picking == playersConnected && currentStage == 'loading') {
+            currentStage = 'picking';
+        }
+
+        if (count_players_picking == docData.players && currentStage == 'picking' && count_players_picking > 0) {
             const values: Room = {
                 players: docData?.players,
                 places: docData?.places,
@@ -89,9 +93,8 @@ export function MatchRoom() {
                 guessingTime: docData?.guessingTime,
                 playersInfo: docData?.playersInfo
             }
-    
-            setRoomValues(values);
             currentStage = 'guessing';
+            setRoomValues(values);
         }
     });
 
@@ -115,7 +118,7 @@ export function MatchRoom() {
             </div>
         )
     }
-    else if (Object.keys(roomValues.playersInfo).length > roomValues.players) {
+    else if (Object.keys(roomValues.playersInfo).length == roomValues.players && roomValues.players > 0) {
         if (currentStage == 'picking') {
             return (
                 <div>
@@ -123,13 +126,20 @@ export function MatchRoom() {
                 </div>
             )
         }
-        else if (currentStage == 'guessing') {
+        else if (currentStage == 'guessing' && roomValues.players > 0) {
             return (
                 <div>
                     <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} correctLocation={{ lat: -31.55542202732198, lng: -54.54408893196694 }} />
                     {/* <RenderMap /> */}
                     {/* <RenderStreetView /> */}
                     {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}
+                </div>
+            )
+        }
+        else {
+            return (
+                <div>
+                    <h2>Loading...</h2>
                 </div>
             )
         }

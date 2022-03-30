@@ -6,7 +6,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
 import { getFirestore, doc, getDoc } from "firebase/firestore"
-import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
+import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot } from "firebase/firestore";
 import { any, bool } from "prop-types";
 
 firebase.initializeApp({
@@ -22,18 +22,25 @@ const firestore = firebase.firestore();
 
 const db = getFirestore();
 
-async function getMarker() {
-  const snapshot = await firebase.firestore().collection('events').get()
-  return snapshot.docs.map(doc => doc.data());
-}
-
-const databaseData = await getMarker();
-console.log(databaseData);
-
 const search = window.location.search;
 const params = new URLSearchParams(search); 
 const roomName = String(params.get('room'));
 const playerName = String(params.get('player'));
+
+let docData;
+async function get_async_data() {
+  const docs = await firestore.collection('matches').doc(roomName).get()
+  return docs.data()
+}
+const getAsync = async () => {
+  const key = await get_async_data();
+  return key;
+}
+getAsync().then(key => {
+  docData = key;
+}, error => {
+  console.log(error);
+});
 
 const icons = [
   'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
@@ -89,7 +96,7 @@ function MyMapStreetComponentGuess({
         });
 
         panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
-            position: correctLocation,
+            position: round["correctLocation"],
             pov: {
                 heading: 34,
                 pitch: 10,
@@ -139,9 +146,14 @@ function CalculateTimeLeftGuess(round, pickingTime) {
   round_number = round;
   const [seconds, setSeconds]: any = useState(round["round"]["pickingTime"] * 60);
   useEffect(() => {
-    if (seconds > 0 && !stopCount) {
+    if (seconds > 0 && !stopCount && updated) {
       setTimeout(() => setSeconds(seconds - 1), 1000);
-    } else if (seconds == 0) {
+    }
+    else if (seconds > 0 && !stopCount && !updated) {
+      updated = true;
+      setTimeout(() => setSeconds(seconds - 1), 1000);
+    }
+    else if (seconds == 0) {
       stopCount = true;
       setSeconds('###### Your chosen location was sent! ######');
       setDoc(doc(db, "matches", roomName), {
