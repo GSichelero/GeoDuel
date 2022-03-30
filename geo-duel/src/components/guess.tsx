@@ -22,6 +22,14 @@ const firestore = firebase.firestore();
 
 const db = getFirestore();
 
+async function getMarker() {
+  const snapshot = await firebase.firestore().collection('events').get()
+  return snapshot.docs.map(doc => doc.data());
+}
+
+const databaseData = await getMarker();
+console.log(databaseData);
+
 const search = window.location.search;
 const params = new URLSearchParams(search); 
 const roomName = String(params.get('room'));
@@ -76,8 +84,12 @@ function MyMapStreetComponentGuess({
             streetViewControl: false
         });
 
+        map.addListener('click', function(e) {
+          updateLocation(e.latLng);
+        });
+
         panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
-            position: fenway,
+            position: correctLocation,
             pov: {
                 heading: 34,
                 pitch: 10,
@@ -92,17 +104,15 @@ function MyMapStreetComponentGuess({
     }
   });
 
-  async function updateLocation() {
-    const selectedPosition = panorama.getPosition();
-    setstreetLocation(selectedPosition);
-    selectedLocation = selectedPosition;
+  async function updateLocation(positionClicked: google.maps.LatLng) {
+    selectedLocation = positionClicked;
     if (marker) {
       marker.setMap(null);
       marker = null;
     }
     marker = new google.maps.Marker({
-      position: selectedPosition,
-      title:"Pick",
+      position: positionClicked,
+      title:"Guess",
       label: {
         text: playerName,
         fontWeight: 'bold'
@@ -120,7 +130,6 @@ function MyMapStreetComponentGuess({
     <div id="mapsContainer">
       <div ref={refMap} id="map" />
       <div ref={refPano} id="pano" />
-      <button className="select" onClick={updateLocation!}>Select Location!</button>
     </div>
   );
 }
@@ -139,8 +148,9 @@ function CalculateTimeLeftGuess(round, pickingTime) {
         playersInfo: {
           [playerName]: {
             [`${String(round["round"]["round_number"])}`]: {
-              guessings: {},
-              picking: new firebase.firestore.GeoPoint(selectedLocation.lat(), selectedLocation.lng()),
+              guessings: {
+                ['0']: new firebase.firestore.GeoPoint(selectedLocation.lat(), selectedLocation.lng())
+              }
             }
           }
         }
@@ -159,7 +169,7 @@ function CalculateTimeLeftGuess(round, pickingTime) {
   return (
     <div>
       <h2>{`Time left: ${seconds} seconds!`}</h2>
-      <button className="ready" onClick={iAmReady!}>I am Ready!!!</button>
+      <button className="ready" onClick={iAmReady!}>Guess Location!</button>
     </div>
   );
 }

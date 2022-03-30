@@ -40,9 +40,11 @@ const roomName = String(params.get('room'));
 const playerName = String(params.get('player'));
 
 let currentRound = 1;
-let pickingStage = true;
-let guessingStage = false;
-let resultsStage = false;
+let currentPlayer = 0;
+let currentStage = 'picking';
+// let pickingStage = true;
+// let guessingStage = false;
+// let resultsStage = false;
 
 export function MatchRoom() {
     const [roomValues, setRoomValues] = useState<Room>({
@@ -79,7 +81,7 @@ export function MatchRoom() {
     
             setRoomValues(values);
         }
-        else if (count_players_picking == docData.players && pickingStage == true) {
+        else if (count_players_picking == docData.players && currentStage == 'picking') {
             const values: Room = {
                 players: docData?.players,
                 places: docData?.places,
@@ -89,8 +91,7 @@ export function MatchRoom() {
             }
     
             setRoomValues(values);
-            guessingStage = true;
-            pickingStage = false;
+            currentStage = 'guessing';
         }
     });
 
@@ -114,22 +115,24 @@ export function MatchRoom() {
             </div>
         )
     }
-    else if ((Object.keys(roomValues.playersInfo).length > roomValues.players) && (pickingStage == true)) {
-        return (
-            <div>
-                <RenderMapStreet round_number={`${currentRound}`} pickingTime={roomValues.pickingTime} />
-            </div>
-        )
-    }
-    else if ((Object.keys(roomValues.playersInfo).length > roomValues.players) && (guessingStage == true)) {
-        return (
-            <div>
-                <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} correctLocation={{ lat: -31.55542202732198, lng: -54.54408893196694 }} />
-                {/* <RenderMap /> */}
-                {/* <RenderStreetView /> */}
-                {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}
-            </div>
-        )
+    else if (Object.keys(roomValues.playersInfo).length > roomValues.players) {
+        if (currentStage == 'picking') {
+            return (
+                <div>
+                    <RenderMapStreet round_number={`${currentRound}`} pickingTime={roomValues.pickingTime} />
+                </div>
+            )
+        }
+        else if (currentStage == 'guessing') {
+            return (
+                <div>
+                    <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} correctLocation={{ lat: -31.55542202732198, lng: -54.54408893196694 }} />
+                    {/* <RenderMap /> */}
+                    {/* <RenderStreetView /> */}
+                    {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}
+                </div>
+            )
+        }
     }
     else {
         return (
