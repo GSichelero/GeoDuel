@@ -68,12 +68,12 @@ function MyMapStreetComponentGuess({
   fenway,
   round,
   pickingTime,
-  correctLocation
+  playerIndex
 }: {
   fenway: google.maps.LatLngLiteral;
   round: number;
   pickingTime: any;
-  correctLocation: google.maps.LatLngLiteral;
+  playerIndex: number;
 }) {
   const refMap: any = useRef();
   const refPano: any = useRef();
@@ -82,32 +82,37 @@ function MyMapStreetComponentGuess({
 
   useEffect(() => {
     if (!updated) {
-        map = new window.google.maps.Map(refMap.current, {
-            center: fenway,
-            zoom: 2,
-            panControl: false,
-            zoomControl: true,
-            fullscreenControl: false,
-            streetViewControl: false
-        });
+      let playerName = Object.keys(docData['playersInfo'])[round['playerIndex']];
+      let geoPoint: any = Object.values(docData['playersInfo'][playerName][round['round_number']]['picking']);
+      let lat = geoPoint[0];
+      let lng = geoPoint[1];
+      let latLngPosition = { lat: lat, lng: lng };
+      map = new window.google.maps.Map(refMap.current, {
+          center: fenway,
+          zoom: 2,
+          panControl: false,
+          zoomControl: true,
+          fullscreenControl: false,
+          streetViewControl: false
+      });
 
-        map.addListener('click', function(e) {
-          updateLocation(e.latLng);
-        });
+      map.addListener('click', function(e) {
+        updateLocation(e.latLng);
+      });
 
-        panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
-            position: round["correctLocation"],
-            pov: {
-                heading: 34,
-                pitch: 10,
-            },
-            linksControl: false,
-            panControl: false,
-            addressControl: false,
-            enableCloseButton: false,
-            zoomControl: true,
-            fullscreenControl: false,
-        });
+      panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
+          position: latLngPosition,
+          pov: {
+              heading: 34,
+              pitch: 10,
+          },
+          linksControl: false,
+          panControl: false,
+          addressControl: false,
+          enableCloseButton: false,
+          zoomControl: true,
+          fullscreenControl: false,
+      });
     }
   });
 
@@ -161,7 +166,7 @@ function CalculateTimeLeftGuess(round, pickingTime) {
           [playerName]: {
             [`${String(round["round"]["round_number"])}`]: {
               guessings: {
-                ['0']: new firebase.firestore.GeoPoint(selectedLocation.lat(), selectedLocation.lng())
+                [round["round"]['playerIndex']]: new firebase.firestore.GeoPoint(selectedLocation.lat(), selectedLocation.lng())
               }
             }
           }
@@ -186,12 +191,12 @@ function CalculateTimeLeftGuess(round, pickingTime) {
   );
 }
 
-export function RenderMapStreetGuess(round_number, pickingTime, correctLocation) {
+export function RenderMapStreetGuess(round_number, pickingTime, playerIndex) {
   const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
-      <MyMapStreetComponentGuess fenway={fenway} round={round_number} pickingTime={pickingTime} correctLocation={correctLocation}/>
+      <MyMapStreetComponentGuess fenway={fenway} round={round_number} pickingTime={pickingTime} playerIndex={playerIndex}/>
       <CalculateTimeLeftGuess round={round_number} pickingTime={pickingTime}/>
     </Wrapper>
     </div>

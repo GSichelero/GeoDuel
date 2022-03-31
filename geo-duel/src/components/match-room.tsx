@@ -81,8 +81,16 @@ export function MatchRoom() {
             setRoomValues(values);
         }
 
-        if (count_players_picking == playersConnected && currentStage == 'loading') {
+        if (count_players_picking < playersConnected && currentStage == 'loading' && roomValues.players > 0) {
+            const values: Room = {
+                players: docData?.players,
+                places: docData?.places,
+                pickingTime: docData?.pickingTime,
+                guessingTime: docData?.guessingTime,
+                playersInfo: docData?.playersInfo
+            }
             currentStage = 'picking';
+            setRoomValues(values);
         }
 
         if (count_players_picking == docData.players && currentStage == 'picking' && count_players_picking > 0) {
@@ -129,7 +137,7 @@ export function MatchRoom() {
         else if (currentStage == 'guessing' && roomValues.players > 0) {
             return (
                 <div>
-                    <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} correctLocation={{ lat: -31.55542202732198, lng: -54.54408893196694 }} />
+                    <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} playerIndex={currentPlayer} />
                     {/* <RenderMap /> */}
                     {/* <RenderStreetView /> */}
                     {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}

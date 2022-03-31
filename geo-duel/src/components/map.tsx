@@ -180,9 +180,14 @@ function CalculateTimeLeft(round, pickingTime) {
   round_number = round;
   const [seconds, setSeconds]: any = useState(round["round"]["pickingTime"] * 60);
   useEffect(() => {
-    if (seconds > 0 && !stopCount) {
+    if (seconds > 0 && !stopCount && updated) {
       setTimeout(() => setSeconds(seconds - 1), 1000);
-    } else if (seconds == 0) {
+    }
+    else if (seconds > 0 && !stopCount && !updated) {
+      updated = true;
+      setTimeout(() => setSeconds(seconds - 1), 1000);
+    }
+    else if (seconds == 0) {
       stopCount = true;
       setSeconds('###### Your chosen location was sent! ######');
       setDoc(doc(db, "matches", roomName), {
