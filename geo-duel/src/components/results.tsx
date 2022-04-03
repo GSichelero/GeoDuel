@@ -67,61 +67,71 @@ let selectedLocation: any = { lat: -31.55542202732198, lng: -54.54408893196694 }
 function MyMapStreetComponentGuess({
   fenway,
   round,
-  pickingTime,
   playerIndex
 }: {
   fenway: google.maps.LatLngLiteral;
   round: number;
-  pickingTime: any;
   playerIndex: number;
 }) {
   const refMap: any = useRef();
-  const refPano: any = useRef();
-  const [streetLocation, setstreetLocation] = useState<google.maps.LatLng | null>();
   round_number = round;
 
   useEffect(() => {
     if (!updated) {
-      let playerName = Object.keys(docData['playersInfo'])[round['playerIndex']];
-      let geoPoint: any = Object.values(docData['playersInfo'][playerName][round['round_number']]['picking']);
-      let lat = geoPoint[0];
-      let lng = geoPoint[1];
-      let latLngPosition = { lat: lat, lng: lng };
-      map = new window.google.maps.Map(refMap.current, {
-          center: fenway,
-          zoom: 2,
-          panControl: false,
-          zoomControl: true,
-          fullscreenControl: false,
-          streetViewControl: false
-      });
+        let playerName = Object.keys(docData['playersInfo'])[round['playerIndex']];
+        let geoPoint: any = Object.values(docData['playersInfo'][playerName][round['round_number']]['picking']);
+        let lat = geoPoint[0];
+        let lng = geoPoint[1];
+        let latLngPosition = { lat: lat, lng: lng };
+        map = new window.google.maps.Map(refMap.current, {
+            center: fenway,
+            zoom: 2,
+            panControl: false,
+            zoomControl: true,
+            fullscreenControl: false,
+            streetViewControl: false
+        });
 
-      map.addListener('click', function(e) {
-        updateLocation(e.latLng);
-      });
-
-      panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
-          position: latLngPosition,
-          pov: {
-              heading: 34,
-              pitch: 10,
-          },
-          linksControl: false,
-          panControl: false,
-          addressControl: false,
-          enableCloseButton: false,
-          zoomControl: true,
-          fullscreenControl: false,
-      });
+        Object.keys(docData['playersInfo']).forEach(function(key) {
+            if (key == playerName) {
+                marker = new google.maps.Marker({
+                    position: latLngPosition,
+                    title:"Correct Location",
+                    label: {
+                      text: playerName,
+                      fontWeight: 'bold'
+                    },
+                    icon: {
+                      url: "http://maps.google.com/mapfiles/kml/pal3/icon31.png",
+                      labelOrigin: new window.google.maps.Point(8, -5)
+                    }
+                  });
+                  marker.setMap(map);
+            }
+            else {
+                let geoPoint: any = Object.values(docData['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
+                let lat = geoPoint[0];
+                let lng = geoPoint[1];
+                let latLngPosition = { lat: lat, lng: lng };
+                marker = new google.maps.Marker({
+                    position: latLngPosition,
+                    title:key,
+                    label: {
+                      text: key,
+                      fontWeight: 'bold'
+                    },
+                    icon: {
+                      url: icons[random],
+                      labelOrigin: new window.google.maps.Point(8, -5)
+                    }
+                  });
+                  marker.setMap(map);
+            }
+        });
     }
   });
 
   async function updateLocation(positionClicked: google.maps.LatLng) {
-    selectedLocation = positionClicked;
-    if (marker) {
-      marker.setMap(null);
-      marker = null;
-    }
     marker = new google.maps.Marker({
       position: positionClicked,
       title:"Guess",
@@ -141,52 +151,6 @@ function MyMapStreetComponentGuess({
   return (
     <div id="mapsContainer">
       <div ref={refMap} id="map" />
-      <div ref={refPano} id="pano" />
-    </div>
-  );
-}
-
-let stopCount: boolean = false;
-function CalculateTimeLeftGuess(round, pickingTime) {
-  round_number = round;
-  const [seconds, setSeconds]: any = useState(round["round"]["pickingTime"] * 60);
-  useEffect(() => {
-    if (seconds > 0 && !stopCount && updated) {
-      setTimeout(() => setSeconds(seconds - 1), 1000);
-    }
-    else if (seconds > 0 && !stopCount && !updated) {
-      updated = true;
-      setTimeout(() => setSeconds(seconds - 1), 1000);
-    }
-    else if (seconds == 0) {
-      stopCount = true;
-      setSeconds('###### Your chosen location was sent! ######');
-      setDoc(doc(db, "matches", roomName), {
-        playersInfo: {
-          [playerName]: {
-            [`${String(round["round"]["round_number"])}`]: {
-              guessings: {
-                [round['playerIndex']]: new firebase.firestore.GeoPoint(selectedLocation.lat(), selectedLocation.lng())
-              }
-            }
-          }
-        }
-      }, { merge: true });
-    }
-    else {
-      setSeconds('###### Your chosen location was sent! ######');
-    }
-  });
-
-  function iAmReady() {
-    stopCount = true;
-    setSeconds(0);
-  }
-
-  return (
-    <div>
-      <h2>{`Time left: ${seconds} seconds!`}</h2>
-      <button className="ready" onClick={iAmReady!}>Guess Location!</button>
     </div>
   );
 }
@@ -196,8 +160,7 @@ export function RenderMapStreetGuess(round_number, pickingTime, playerIndex) {
   return (
     <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
-      <MyMapStreetComponentGuess fenway={fenway} round={round_number} pickingTime={pickingTime} playerIndex={playerIndex}/>
-      <CalculateTimeLeftGuess round={round_number} pickingTime={pickingTime}/>
+      <MyMapStreetComponentGuess fenway={fenway} round={round_number} playerIndex={playerIndex}/>
     </Wrapper>
     </div>
   );

@@ -70,6 +70,17 @@ export function MatchRoom() {
             }
         });
 
+        let count_players_guessings = 0
+        Object.keys(docData['playersInfo']).forEach(function(key) {
+            if (`${currentRound}` in docData['playersInfo'][key]) {
+                if ('guessings' in docData['playersInfo'][key][`${currentRound}`]) {
+                    if (currentPlayer in docData['playersInfo'][key][`${currentRound}`]['guessings']) {
+                        count_players_guessings += 1;
+                    }
+                }
+            }
+        });
+
         if (playersConnected != playersPreviouslyConnected) {
             const values: Room = {
                 players: docData?.players,
@@ -104,6 +115,19 @@ export function MatchRoom() {
             currentStage = 'guessing';
             setRoomValues(values);
         }
+
+        if (currentStage == 'guessing' && count_players_guessings == docData.players && count_players_guessings > 0) {
+            const values: Room = {
+                players: docData?.players,
+                places: docData?.places,
+                pickingTime: docData?.pickingTime,
+                guessingTime: docData?.guessingTime,
+                playersInfo: docData?.playersInfo
+            }
+            currentStage = 'results';
+            setRoomValues(values);
+        }
+        
     });
 
     if (Object.keys(roomValues.playersInfo).length < roomValues.players) {
@@ -141,6 +165,14 @@ export function MatchRoom() {
                     {/* <RenderMap /> */}
                     {/* <RenderStreetView /> */}
                     {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}
+                </div>
+            )
+        }
+        else if (currentStage == 'results' && roomValues.players > 0) {
+            setTimeout(function() { setRoomValues(roomValues); currentStage = 'picking'; }, 20000);
+            return (
+                <div>
+                    <h2>{currentStage}</h2>
                 </div>
             )
         }
