@@ -83,7 +83,7 @@ function MyMapComponentResult({
             if (key == playerName) {
                 marker = new google.maps.Marker({
                     position: latLngPosition,
-                    title:"Correct Location",
+                    title:key,
                     label: {
                       text: playerName,
                       fontWeight: 'bold'
@@ -121,7 +121,7 @@ function MyMapComponentResult({
 
   return (
     <div id="mapsContainer">
-      <div ref={refMap} id="map" />
+      <div ref={refMap} id="mapResult" />
     </div>
   );
 }
@@ -130,7 +130,7 @@ export function RenderMapResult(round_number, pickingTime, playerIndex, docData)
   const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
-    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
+    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render} libraries={["geometry"]}>
       <MyMapComponentResult fenway={fenway} round={round_number} playerIndex={playerIndex} docData={docData}/>
     </Wrapper>
     </div>
