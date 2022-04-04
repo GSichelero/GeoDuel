@@ -8,6 +8,7 @@ import { getFirestore, doc, getDoc, getDocFromServer } from "firebase/firestore"
 import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
 import { RenderMapStreet } from '../components/map';
 import { RenderMapStreetGuess } from '../components/guess';
+import { RenderMapResult } from '../components/results';
 
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 
@@ -40,11 +41,8 @@ const roomName = String(params.get('room'));
 const playerName = String(params.get('player'));
 
 let currentRound = 1;
-let currentPlayer = 0;
+let currentPlayer = 1;
 let currentStage = 'loading';
-// let pickingStage = true;
-// let guessingStage = false;
-// let resultsStage = false;
 
 export function MatchRoom() {
     const [roomValues, setRoomValues] = useState<Room>({
@@ -129,7 +127,7 @@ export function MatchRoom() {
         }
         
     });
-
+    console.log(currentStage);
     if (Object.keys(roomValues.playersInfo).length < roomValues.players) {
         let playersNames: Array<string> = []
         Object.keys(roomValues.playersInfo).forEach(function(key) {
@@ -161,10 +159,7 @@ export function MatchRoom() {
         else if (currentStage == 'guessing' && roomValues.players > 0) {
             return (
                 <div>
-                    <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} playerIndex={currentPlayer} />
-                    {/* <RenderMap /> */}
-                    {/* <RenderStreetView /> */}
-                    {/* <RenderMapStreet round_number={1} pickingTime={roomValues.pickingTime} /> */}
+                    <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} playerIndex={currentPlayer} docData={roomValues} />
                 </div>
             )
         }
@@ -172,14 +167,14 @@ export function MatchRoom() {
             setTimeout(function() { setRoomValues(roomValues); currentStage = 'picking'; }, 20000);
             return (
                 <div>
-                    <h2>{currentStage}</h2>
+                    <RenderMapResult round_number={`${currentRound}`} playerIndex={currentPlayer} docData={roomValues} />
                 </div>
             )
         }
         else {
             return (
                 <div>
-                    <h2>Loading...</h2>
+                    <h2>Loading...a</h2>
                 </div>
             )
         }
@@ -187,7 +182,7 @@ export function MatchRoom() {
     else {
         return (
             <div>
-                <h2>Loading...</h2>
+                <h2>Loading...b</h2>
             </div>
         )
     }

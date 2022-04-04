@@ -27,21 +27,6 @@ const params = new URLSearchParams(search);
 const roomName = String(params.get('room'));
 const playerName = String(params.get('player'));
 
-let docData;
-async function get_async_data() {
-  const docs = await firestore.collection('matches').doc(roomName).get()
-  return docs.data()
-}
-const getAsync = async () => {
-  const key = await get_async_data();
-  return key;
-}
-getAsync().then(key => {
-  docData = key;
-}, error => {
-  console.log(error);
-});
-
 const icons = [
   'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
   'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
@@ -64,22 +49,24 @@ let panorama;
 let marker;
 let round_number: number;
 let selectedLocation: any = { lat: -31.55542202732198, lng: -54.54408893196694 };
-function MyMapStreetComponentGuess({
+function MyMapComponentResult({
   fenway,
   round,
-  playerIndex
+  playerIndex,
+  docData
 }: {
   fenway: google.maps.LatLngLiteral;
   round: number;
   playerIndex: number;
+  docData: any;
 }) {
   const refMap: any = useRef();
   round_number = round;
 
   useEffect(() => {
     if (!updated) {
-        let playerName = Object.keys(docData['playersInfo'])[round['playerIndex']];
-        let geoPoint: any = Object.values(docData['playersInfo'][playerName][round['round_number']]['picking']);
+        let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex']];
+        let geoPoint: any = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
         let lat = geoPoint[0];
         let lng = geoPoint[1];
         let latLngPosition = { lat: lat, lng: lng };
@@ -92,7 +79,7 @@ function MyMapStreetComponentGuess({
             streetViewControl: false
         });
 
-        Object.keys(docData['playersInfo']).forEach(function(key) {
+        Object.keys(round['docData']['playersInfo']).forEach(function(key) {
             if (key == playerName) {
                 marker = new google.maps.Marker({
                     position: latLngPosition,
@@ -109,7 +96,7 @@ function MyMapStreetComponentGuess({
                   marker.setMap(map);
             }
             else {
-                let geoPoint: any = Object.values(docData['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
+                let geoPoint: any = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
                 let lat = geoPoint[0];
                 let lng = geoPoint[1];
                 let latLngPosition = { lat: lat, lng: lng };
@@ -128,25 +115,9 @@ function MyMapStreetComponentGuess({
                   marker.setMap(map);
             }
         });
+        updated = true;
     }
   });
-
-  async function updateLocation(positionClicked: google.maps.LatLng) {
-    marker = new google.maps.Marker({
-      position: positionClicked,
-      title:"Guess",
-      label: {
-        text: playerName,
-        fontWeight: 'bold'
-      },
-      icon: {
-        url: icons[random],
-        labelOrigin: new window.google.maps.Point(8, -5)
-      }
-    });
-    marker.setMap(map);
-    updated = true;
-  }
 
   return (
     <div id="mapsContainer">
@@ -155,12 +126,12 @@ function MyMapStreetComponentGuess({
   );
 }
 
-export function RenderMapStreetGuess(round_number, pickingTime, playerIndex) {
+export function RenderMapResult(round_number, pickingTime, playerIndex, docData) {
   const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
-      <MyMapStreetComponentGuess fenway={fenway} round={round_number} playerIndex={playerIndex}/>
+      <MyMapComponentResult fenway={fenway} round={round_number} playerIndex={playerIndex} docData={docData}/>
     </Wrapper>
     </div>
   );
