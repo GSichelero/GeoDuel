@@ -122,6 +122,23 @@ function MyMapComponentResult({
   return (
     <div id="mapsContainer">
       <div ref={refMap} id="mapResult" />
+      {
+          Object.keys(round['docData']['playersInfo']).map(function(key) {
+            if (key == playerName) {
+                // return (<div>{key}</div>)
+            }
+            else {
+                // https://developers.google.com/maps/documentation/javascript/reference/geometry#spherical.computeDistanceBetween
+                // https://stackoverflow.com/questions/41374572/how-to-render-an-array-of-objects-in-react
+                // http://kml4earth.appspot.com/icons.html
+                let geoPoint: any = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
+                let lat = geoPoint[0];
+                let lng = geoPoint[1];
+                let latLngPosition = { lat: lat, lng: lng };
+
+                // return (<div>{key}</div>)
+            }
+        })}
     </div>
   );
 }
