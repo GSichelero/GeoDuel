@@ -184,7 +184,7 @@ export function RenderMapStreetGuess(round_number, pickingTime, playerIndex, doc
   const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
-    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
+    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render} libraries={["geometry"]}>
       <MyMapStreetComponentGuess fenway={fenway} round={round_number} pickingTime={pickingTime} playerIndex={playerIndex} docData={docData}/>
       <CalculateTimeLeftGuess round={round_number} pickingTime={pickingTime}/>
     </Wrapper>

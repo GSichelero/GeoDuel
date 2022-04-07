@@ -48,7 +48,7 @@ let map;
 let panorama;
 let marker;
 let round_number: number;
-let selectedLocation: any = { lat: -31.55542202732198, lng: -54.54408893196694 };
+let correctPosition: google.maps.LatLng;
 function MyMapComponentResult({
   fenway,
   round,
@@ -62,14 +62,14 @@ function MyMapComponentResult({
 }) {
   const refMap: any = useRef();
   round_number = round;
+  let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex']];
+  let geoPoint: any = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
+  let lat = geoPoint[0];
+  let lng = geoPoint[1];
+  correctPosition = new window.google.maps.LatLng(lat, lng);
 
   useEffect(() => {
     if (!updated) {
-        let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex']];
-        let geoPoint: any = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
-        let lat = geoPoint[0];
-        let lng = geoPoint[1];
-        let latLngPosition = { lat: lat, lng: lng };
         map = new window.google.maps.Map(refMap.current, {
             center: fenway,
             zoom: 2,
@@ -82,7 +82,7 @@ function MyMapComponentResult({
         Object.keys(round['docData']['playersInfo']).forEach(function(key) {
             if (key == playerName) {
                 marker = new google.maps.Marker({
-                    position: latLngPosition,
+                    position: correctPosition,
                     title:key,
                     label: {
                       text: playerName,
@@ -99,7 +99,7 @@ function MyMapComponentResult({
                 let geoPoint: any = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
                 let lat = geoPoint[0];
                 let lng = geoPoint[1];
-                let latLngPosition = { lat: lat, lng: lng };
+                let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
                 marker = new google.maps.Marker({
                     position: latLngPosition,
                     title:key,
@@ -125,7 +125,7 @@ function MyMapComponentResult({
       {
           Object.keys(round['docData']['playersInfo']).map(function(key) {
             if (key == playerName) {
-                // return (<div>{key}</div>)
+              return (<h2>Location chosen by: {key}</h2>)
             }
             else {
                 // https://developers.google.com/maps/documentation/javascript/reference/geometry#spherical.computeDistanceBetween
@@ -134,9 +134,16 @@ function MyMapComponentResult({
                 let geoPoint: any = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
                 let lat = geoPoint[0];
                 let lng = geoPoint[1];
-                let latLngPosition = { lat: lat, lng: lng };
-
-                // return (<div>{key}</div>)
+                let latLngPosition: google.maps.LatLng = new window.google.maps.LatLng(lat, lng);
+                let distanceFromCorrectPlace = window.google.maps.geometry.spherical.computeDistanceBetween(correctPosition, latLngPosition);
+                let score = 10000 - ((Math.log(distanceFromCorrectPlace) / Math.log(2)) * 400);
+                if (score < 0) {
+                    score = 0;
+                }
+                else if (score > 10000) {
+                  score = 10000;
+                }
+                return (<h2>{key}: {Math.round(score)} Points!</h2>)
             }
         })}
     </div>

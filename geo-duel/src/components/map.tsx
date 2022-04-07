@@ -170,7 +170,7 @@ export function RenderMapStreet(round_number, pickingTime) {
   const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
-    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render}>
+    <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render} libraries={["geometry"]}>
       <MyMapStreetComponent fenway={fenway} round={round_number} pickingTime={pickingTime}/>
       <CalculateTimeLeft round={round_number} pickingTime={pickingTime}/>
     </Wrapper>

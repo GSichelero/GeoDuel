@@ -127,7 +127,7 @@ export function MatchRoom() {
         }
         
     });
-    console.log(currentStage);
+
     if (Object.keys(roomValues.playersInfo).length < roomValues.players) {
         let playersNames: Array<string> = []
         Object.keys(roomValues.playersInfo).forEach(function(key) {
@@ -164,7 +164,7 @@ export function MatchRoom() {
             )
         }
         else if (currentStage == 'results' && roomValues.players > 0) {
-            setTimeout(function() { setRoomValues(roomValues); currentStage = 'picking'; }, 20000);
+            setTimeout(function() { setRoomValues(roomValues); currentStage = 'picking'; }, 45000);
             return (
                 <div>
                     <RenderMapResult round_number={`${currentRound}`} playerIndex={currentPlayer} docData={roomValues} />
