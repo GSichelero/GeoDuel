@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/GeoMVP/static/css/main.23776e72.css",
-    "main.js": "/GeoMVP/static/js/main.0880be09.js",
-    "static/js/787.80b2a1cc.chunk.js": "/GeoMVP/static/js/787.80b2a1cc.chunk.js",
-    "index.html": "/GeoMVP/index.html",
-    "main.23776e72.css.map": "/GeoMVP/static/css/main.23776e72.css.map",
-    "main.0880be09.js.map": "/GeoMVP/static/js/main.0880be09.js.map",
-    "787.80b2a1cc.chunk.js.map": "/GeoMVP/static/js/787.80b2a1cc.chunk.js.map"
+    "main.css": "/GeoDuel/static/css/main.23776e72.css",
+    "main.js": "/GeoDuel/static/js/main.960d452a.js",
+    "static/js/787.80b2a1cc.chunk.js": "/GeoDuel/static/js/787.80b2a1cc.chunk.js",
+    "index.html": "/GeoDuel/index.html",
+    "main.23776e72.css.map": "/GeoDuel/static/css/main.23776e72.css.map",
+    "main.960d452a.js.map": "/GeoDuel/static/js/main.960d452a.js.map",
+    "787.80b2a1cc.chunk.js.map": "/GeoDuel/static/js/787.80b2a1cc.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.23776e72.css",
-    "static/js/main.0880be09.js"
+    "static/js/main.960d452a.js"
   ]
 }
