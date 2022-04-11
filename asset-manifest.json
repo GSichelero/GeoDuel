@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/GeoMVP/static/css/main.23776e72.css",
+    "main.js": "/GeoMVP/static/js/main.0880be09.js",
+    "static/js/787.80b2a1cc.chunk.js": "/GeoMVP/static/js/787.80b2a1cc.chunk.js",
+    "index.html": "/GeoMVP/index.html",
+    "main.23776e72.css.map": "/GeoMVP/static/css/main.23776e72.css.map",
+    "main.0880be09.js.map": "/GeoMVP/static/js/main.0880be09.js.map",
+    "787.80b2a1cc.chunk.js.map": "/GeoMVP/static/js/787.80b2a1cc.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.23776e72.css",
+    "static/js/main.0880be09.js"
+  ]
+}
