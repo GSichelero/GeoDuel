@@ -148,7 +148,7 @@ function MyMapComponentEndGame({
   let player_number = 1;
 
   function playAgain() {
-    window.location.href = '/play';
+    window.location.href = '/GeoDuel/play';
   }
 
   return (

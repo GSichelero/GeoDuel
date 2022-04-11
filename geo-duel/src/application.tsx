@@ -6,10 +6,10 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element= {<EnterRoom/>} />
-        <Route path="/createroom" element= {<HomeForm/>} />
-        <Route path="/play" element= {<EnterRoom/>} />
-        <Route path="/match" element= {<Match/>} />
+        <Route path="/GeoDuel" element= {<EnterRoom/>} />
+        <Route path="/GeoDuel/createroom" element= {<HomeForm/>} />
+        <Route path="/GeoDuel/play" element= {<EnterRoom/>} />
+        <Route path="/GeoDuel/match" element= {<Match/>} />
       </Routes>
     </Router>
   );
