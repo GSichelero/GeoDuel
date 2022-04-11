@@ -122,17 +122,26 @@ function MyMapStreetComponent({
   );
 }
 
-let stopCount: boolean = false;
 function CalculateTimeLeft(round, pickingTime) {
+  let stopCount: boolean = false;
+  updated = false;
   round_number = round;
   const [seconds, setSeconds]: any = useState(round["round"]["pickingTime"] * 60);
   useEffect(() => {
     if (seconds > 0 && !stopCount && updated) {
-      setTimeout(() => setSeconds(seconds - 1), 1000);
+      const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
+      const timerId = timer();
+      return () => {
+        clearTimeout(timerId);
+      };
     }
     else if (seconds > 0 && !stopCount && !updated) {
       updated = true;
-      setTimeout(() => setSeconds(seconds - 1), 1000);
+      const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
+      const timerId = timer();
+      return () => {
+        clearTimeout(timerId);
+      };
     }
     else if (seconds == 0) {
       stopCount = true;
@@ -167,7 +176,7 @@ function CalculateTimeLeft(round, pickingTime) {
 }
 
 export function RenderMapStreet(round_number, pickingTime) {
-  const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
+  const fenway = { lat: +10.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render} libraries={["geometry"]}>

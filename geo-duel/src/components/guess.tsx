@@ -1,13 +1,11 @@
-import React, { useEffect, useRef, useState, ReactElement } from "react";
-import ReactDOM from "react-dom";
+import React, { useEffect, useRef, useState } from "react";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
-import { getFirestore, doc, getDoc } from "firebase/firestore"
-import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot } from "firebase/firestore";
-import { any, bool } from "prop-types";
+import { getFirestore, doc } from "firebase/firestore"
+import { setDoc } from "firebase/firestore";
 
 firebase.initializeApp({
   apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
@@ -42,7 +40,6 @@ const render = (status: Status): any => {
   return <h1>{status}</h1>;
 };
 
-
 let updated = false;
 let map;
 let panorama;
@@ -62,20 +59,26 @@ function MyMapStreetComponentGuess({
   playerIndex: number;
   docData: any;
 }) {
-  const refMap: any = useRef();
-  const refPano: any = useRef();
-  const [streetLocation, setstreetLocation] = useState<google.maps.LatLng | null>();
+  const refMapGuess: any = useRef();
+  const refPanoGuess: any = useRef();
   round_number = round;
 
   useEffect(() => {
     if (!updated) {
-      console.log(round['docData']);
-      let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex']];
-      let geoPoint: any = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
+      let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex'] - 1];
+      let geoPoint: any;
+      while (!geoPoint) {
+        try {
+          geoPoint = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      geoPoint = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
       let lat = geoPoint[0];
       let lng = geoPoint[1];
       let latLngPosition = { lat: lat, lng: lng };
-      map = new window.google.maps.Map(refMap.current, {
+      map = new window.google.maps.Map(refMapGuess.current, {
           center: fenway,
           zoom: 2,
           panControl: false,
@@ -88,7 +91,7 @@ function MyMapStreetComponentGuess({
         updateLocation(e.latLng);
       });
 
-      panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
+      panorama = new window.google.maps.StreetViewPanorama(refPanoGuess.current, {
           position: latLngPosition,
           pov: {
               heading: 34,
@@ -129,23 +132,51 @@ function MyMapStreetComponentGuess({
 
   return (
     <div id="mapsContainer">
-      <div ref={refMap} id="map" />
-      <div ref={refPano} id="pano" />
+      <div ref={refMapGuess} id="map" />
+      <div ref={refPanoGuess} id="pano" />
     </div>
   );
 }
 
-let stopCount: boolean = false;
 function CalculateTimeLeftGuess(round, pickingTime) {
   round_number = round;
   const [seconds, setSeconds]: any = useState(round["round"]["pickingTime"] * 60);
+  let stopCount: boolean = false;
+  updated = false;
+
   useEffect(() => {
     if (seconds > 0 && !stopCount && updated) {
-      setTimeout(() => setSeconds(seconds - 1), 1000);
+      const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
+      const timerId = timer();
+      return () => {
+        clearTimeout(timerId);
+      };
     }
     else if (seconds > 0 && !stopCount && !updated) {
-      updated = true;
-      setTimeout(() => setSeconds(seconds - 1), 1000);
+      if (playerName == Object.keys(round["round"]['docData']['playersInfo']).sort()[round["round"]['playerIndex'] -1]) {
+        stopCount = true;
+        updated = true;
+        setSeconds('###### The other players are guessing your location, wait a little! ######');
+        setDoc(doc(db, "matches", roomName), {
+          playersInfo: {
+            [playerName]: {
+              [`${String(round["round"]["round_number"])}`]: {
+                guessings: {
+                  [round["round"]['playerIndex']]: new firebase.firestore.GeoPoint(0, 0)
+                }
+              }
+            }
+          }
+        }, { merge: true });
+      }
+      else{
+        updated = true;
+        const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
+        const timerId = timer();
+        return () => {
+          clearTimeout(timerId);
+        };
+      }
     }
     else if (seconds == 0) {
       stopCount = true;
@@ -162,7 +193,7 @@ function CalculateTimeLeftGuess(round, pickingTime) {
         }
       }, { merge: true });
     }
-    else {
+    else if(playerName != Object.keys(round["round"]['docData']['playersInfo']).sort()[round["round"]['playerIndex'] - 1]) {
       setSeconds('###### Your chosen location was sent! ######');
     }
   });
@@ -181,7 +212,7 @@ function CalculateTimeLeftGuess(round, pickingTime) {
 }
 
 export function RenderMapStreetGuess(round_number, pickingTime, playerIndex, docData) {
-  const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
+  const fenway = { lat: +10.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render} libraries={["geometry"]}>

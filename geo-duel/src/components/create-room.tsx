@@ -53,7 +53,8 @@ export function MyForm() {
       guessingTime: inputs.guessingTime,
       playersInfo: {
         [inputs.username]: {}
-      }
+      },
+      currentRound: 'loading'
     });
 
     window.location.href = `/match?player=${inputs.username}&room=${inputs.roomName}`

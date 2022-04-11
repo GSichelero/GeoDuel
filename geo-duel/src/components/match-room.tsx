@@ -1,18 +1,16 @@
-import React, { useRef, useState, createElement, Component, useEffect } from "react";
+import { useState, useEffect } from "react";
 import '../interface/create-room.css';
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/analytics';
-import { getFirestore, doc, getDoc, getDocFromServer } from "firebase/firestore"
-import { setDoc, addDoc, updateDoc, deleteDoc, deleteField, collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore"
+import { onSnapshot } from "firebase/firestore";
 import { RenderMapStreet } from '../components/map';
 import { RenderMapStreetGuess } from '../components/guess';
 import { RenderMapResult } from '../components/results';
-
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-
-import { Map, GoogleApiWrapper } from 'google-maps-react';
+import { RenderMapEndGame } from '../components/end-game';
+import { doc, setDoc, addDoc, updateDoc, deleteDoc, deleteField } from "firebase/firestore";
 
 firebase.initializeApp({
   apiKey: "AIzaSyCKrzHCFzQSADP43iFN2e_gduzX-1TTmj8",
@@ -33,6 +31,7 @@ interface Room {
     pickingTime: number;
     guessingTime: number;
     playersInfo: any;
+    currentRound: string;
 };
 
 const search = window.location.search;
@@ -43,6 +42,24 @@ const playerName = String(params.get('player'));
 let currentRound = 1;
 let currentPlayer = 1;
 let currentStage = 'loading';
+let waitResult = false;
+let allPlayersConnected = false;
+let count_players_picking = 0;
+let count_players_guessings = 0;
+let previousStage = 'loading';
+let values;
+let oldValues;
+let updateValues = false;
+
+let docData: any = {
+    players: 0,
+    places: 0,
+    pickingTime: 0,
+    guessingTime: 0,
+    playersInfo: {},
+    currentRound: 'loading'
+}; 
+let playersConnected;
 
 export function MatchRoom() {
     const [roomValues, setRoomValues] = useState<Room>({
@@ -50,16 +67,44 @@ export function MatchRoom() {
         places: 0,
         pickingTime: 0,
         guessingTime: 0,
-        playersInfo: {}
+        playersInfo: {},
+        currentRound: 'loading'
     });
 
-    const matchInfo = onSnapshot(doc(db, "matches", roomName), (doc) => {
-        const playersPreviouslyConnected = Object.keys(roomValues.playersInfo).length || 0;
+    if (values && updateValues) {
+        if (oldValues) {
+            if (values != oldValues) {
+                setTimeout(() => {  setRoomValues(values); }, 2000);
+            }
+        }
+        oldValues = values;
+    }
+    updateValues = false;
 
-        const docData: any = doc.data();
-        const playersConnected = Object.keys(docData?.playersInfo).length;
+    const matchInfo = onSnapshot(doc(db, "matches", roomName), (docSnap) => {
+        docData = docSnap.data();
+        playersConnected = Object.keys(docData?.playersInfo).length;
+    
+        let playersPreviouslyConnected = Object.keys(roomValues.playersInfo).length || 0;
+        previousStage = roomValues.currentRound || 'loading';
 
-        let count_players_picking = 0
+        if (playersConnected && playersConnected <= Number(docData.players) && allPlayersConnected == false && playersPreviouslyConnected != playersConnected) {
+            if (playersConnected == Number(docData.players)) {
+                allPlayersConnected = true;
+            }
+            values = {
+                players: docData?.players,
+                places: docData?.places,
+                pickingTime: docData?.pickingTime,
+                guessingTime: docData?.guessingTime,
+                playersInfo: docData?.playersInfo,
+                currentRound: `${Math.random() * 1000000}`
+            }
+            updateValues = true;
+            setRoomValues(values);
+        }
+
+        count_players_picking = 0
         Object.keys(docData['playersInfo']).forEach(function(key) {
             if (`${currentRound}` in docData['playersInfo'][key]) {
                 if ('picking' in docData['playersInfo'][key][`${currentRound}`]) {
@@ -68,7 +113,7 @@ export function MatchRoom() {
             }
         });
 
-        let count_players_guessings = 0
+        count_players_guessings = 0
         Object.keys(docData['playersInfo']).forEach(function(key) {
             if (`${currentRound}` in docData['playersInfo'][key]) {
                 if ('guessings' in docData['playersInfo'][key][`${currentRound}`]) {
@@ -78,54 +123,103 @@ export function MatchRoom() {
                 }
             }
         });
-
-        if (playersConnected != playersPreviouslyConnected) {
-            const values: Room = {
-                players: docData?.players,
-                places: docData?.places,
-                pickingTime: docData?.pickingTime,
-                guessingTime: docData?.guessingTime,
-                playersInfo: docData?.playersInfo
-            }
-            setRoomValues(values);
-        }
-
-        if (count_players_picking < playersConnected && currentStage == 'loading' && roomValues.players > 0) {
-            const values: Room = {
-                players: docData?.players,
-                places: docData?.places,
-                pickingTime: docData?.pickingTime,
-                guessingTime: docData?.guessingTime,
-                playersInfo: docData?.playersInfo
-            }
-            currentStage = 'picking';
-            setRoomValues(values);
-        }
-
-        if (count_players_picking == docData.players && currentStage == 'picking' && count_players_picking > 0) {
-            const values: Room = {
-                players: docData?.players,
-                places: docData?.places,
-                pickingTime: docData?.pickingTime,
-                guessingTime: docData?.guessingTime,
-                playersInfo: docData?.playersInfo
-            }
-            currentStage = 'guessing';
-            setRoomValues(values);
-        }
-
-        if (currentStage == 'guessing' && count_players_guessings == docData.players && count_players_guessings > 0) {
-            const values: Room = {
-                players: docData?.players,
-                places: docData?.places,
-                pickingTime: docData?.pickingTime,
-                guessingTime: docData?.guessingTime,
-                playersInfo: docData?.playersInfo
-            }
-            currentStage = 'results';
-            setRoomValues(values);
-        }
         
+        if (playersConnected > 0) {
+            if (currentStage == 'loading' && playersConnected == Number(docData.players)) {
+                values = {
+                    players: docData?.players,
+                    places: docData?.places,
+                    pickingTime: docData?.pickingTime,
+                    guessingTime: docData?.guessingTime,
+                    playersInfo: docData?.playersInfo,
+                    currentRound: `${Math.random() * 1000000}`
+                }
+                currentStage = 'picking';
+                updateValues = true;
+                setRoomValues(values);
+            }
+            
+            if (currentStage == 'picking' && count_players_picking == Number(docData.players)) {
+                values = {
+                    players: docData?.players,
+                    places: docData?.places,
+                    pickingTime: docData?.pickingTime,
+                    guessingTime: docData?.guessingTime,
+                    playersInfo: docData?.playersInfo,
+                    currentRound: `${Math.random() * 100000}`
+                }
+                currentStage = 'guessing';
+                updateValues = true;
+                setRoomValues(values);
+            }
+
+            if (currentStage == 'guessing' && count_players_guessings == Number(docData.players)) {
+                values = {
+                    players: docData?.players,
+                    places: docData?.places,
+                    pickingTime: docData?.pickingTime,
+                    guessingTime: docData?.guessingTime,
+                    playersInfo: docData?.playersInfo,
+                    currentRound: `${Math.random() * 100000}`
+                }
+                currentStage = 'results';
+                waitResult = false;
+                updateValues = true;
+                setRoomValues(values);
+            }
+        }
+
+        if (currentStage == 'results' && !waitResult) {
+            waitResult = true;
+            if (currentPlayer < Number(docData.players)) {
+                setTimeout(function() {
+                    values = {
+                        players: docData?.players,
+                        places: docData?.places,
+                        pickingTime: docData?.pickingTime,
+                        guessingTime: docData?.guessingTime,
+                        playersInfo: docData?.playersInfo,
+                        currentRound: `${Math.random() * 100000}`
+                    }
+                    currentPlayer += 1;
+                    currentStage = 'guessing';
+                    updateValues = true;
+                    setRoomValues(values);
+                }, 20000);
+            }
+            else if (currentRound < Number(docData.places)) {
+                setTimeout(function() {
+                    values = {
+                        players: docData?.players,
+                        places: docData?.places,
+                        pickingTime: docData?.pickingTime,
+                        guessingTime: docData?.guessingTime,
+                        playersInfo: docData?.playersInfo,
+                        currentRound: `${Math.random() * 100000}`
+                    }
+                    currentPlayer = 1;
+                    currentRound += 1;
+                    currentStage = 'picking';
+                    updateValues = true;
+                    setRoomValues(values);
+                }, 20000);
+            }
+            else if (currentRound == Number(docData.places) && currentPlayer == Number(docData.players)) {
+                setTimeout(function() {
+                    values = {
+                        players: docData?.players,
+                        places: docData?.places,
+                        pickingTime: docData?.pickingTime,
+                        guessingTime: docData?.guessingTime,
+                        playersInfo: docData?.playersInfo,
+                        currentRound: `${Math.random() * 100000}`
+                    }
+                    currentStage = 'end';
+                    updateValues = true;
+                    setRoomValues(values);
+                }, 20000);
+            }
+        }
     });
 
     if (Object.keys(roomValues.playersInfo).length < roomValues.players) {
@@ -156,18 +250,24 @@ export function MatchRoom() {
                 </div>
             )
         }
-        else if (currentStage == 'guessing' && roomValues.players > 0) {
+        else if (currentStage == 'guessing') {
             return (
                 <div>
                     <RenderMapStreetGuess round_number={`${currentRound}`} pickingTime={roomValues.guessingTime} playerIndex={currentPlayer} docData={roomValues} />
                 </div>
             )
         }
-        else if (currentStage == 'results' && roomValues.players > 0) {
-            setTimeout(function() { setRoomValues(roomValues); currentStage = 'picking'; }, 45000);
+        else if (currentStage == 'results') {
             return (
                 <div>
                     <RenderMapResult round_number={`${currentRound}`} playerIndex={currentPlayer} docData={roomValues} />
+                </div>
+            )
+        }
+        else if (currentStage == 'end') {
+            return (
+                <div>
+                    <RenderMapEndGame docData={roomValues} />
                 </div>
             )
         }

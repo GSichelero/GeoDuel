@@ -36,14 +36,12 @@ const icons = [
   'http://maps.google.com/mapfiles/ms/icons/pink-dot.png',
   'http://maps.google.com/mapfiles/ms/icons/orange-dot.png',
 ]
-const random = Math.floor(Math.random() * icons.length);
 
 const render = (status: Status): any => {
   return <h1>{status}</h1>;
 };
 
 
-let updated = false;
 let map;
 let panorama;
 let marker;
@@ -60,17 +58,18 @@ function MyMapComponentResult({
   playerIndex: number;
   docData: any;
 }) {
-  const refMap: any = useRef();
+  const refMapResult: any = useRef();
   round_number = round;
-  let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex']];
+  let playerName = Object.keys(round['docData']['playersInfo']).sort()[round['playerIndex'] - 1];
   let geoPoint: any = Object.values(round['docData']['playersInfo'][playerName][round['round_number']]['picking']);
   let lat = geoPoint[0];
   let lng = geoPoint[1];
   correctPosition = new window.google.maps.LatLng(lat, lng);
+  let updated = false;
 
   useEffect(() => {
     if (!updated) {
-        map = new window.google.maps.Map(refMap.current, {
+        map = new window.google.maps.Map(refMapResult.current, {
             center: fenway,
             zoom: 2,
             panControl: false,
@@ -79,7 +78,7 @@ function MyMapComponentResult({
             streetViewControl: false
         });
 
-        Object.keys(round['docData']['playersInfo']).forEach(function(key) {
+        Object.keys(round['docData']['playersInfo']).sort().forEach(function(key) {
             if (key == playerName) {
                 marker = new google.maps.Marker({
                     position: correctPosition,
@@ -100,6 +99,7 @@ function MyMapComponentResult({
                 let lat = geoPoint[0];
                 let lng = geoPoint[1];
                 let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
+                let random = Math.floor(Math.random() * icons.length);
                 marker = new google.maps.Marker({
                     position: latLngPosition,
                     title:key,
@@ -121,17 +121,22 @@ function MyMapComponentResult({
 
   return (
     <div id="mapsContainer">
-      <div ref={refMap} id="mapResult" />
+      <div ref={refMapResult} id="mapResult" />
       {
-          Object.keys(round['docData']['playersInfo']).map(function(key) {
+          Object.keys(round['docData']['playersInfo']).sort().map(function(key) {
             if (key == playerName) {
               return (<h2>Location chosen by: {key}</h2>)
             }
             else {
-                // https://developers.google.com/maps/documentation/javascript/reference/geometry#spherical.computeDistanceBetween
-                // https://stackoverflow.com/questions/41374572/how-to-render-an-array-of-objects-in-react
-                // http://kml4earth.appspot.com/icons.html
-                let geoPoint: any = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
+                let geoPoint: any;
+                while (!geoPoint) {
+                  try {
+                    geoPoint = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }
+                geoPoint = Object.values(round['docData']['playersInfo'][key][round['round_number']]['guessings'][round['playerIndex']]);
                 let lat = geoPoint[0];
                 let lng = geoPoint[1];
                 let latLngPosition: google.maps.LatLng = new window.google.maps.LatLng(lat, lng);
@@ -143,7 +148,7 @@ function MyMapComponentResult({
                 else if (score > 10000) {
                   score = 10000;
                 }
-                return (<h2>{key}: {Math.round(score)} Points!</h2>)
+                return (<h2>{key}: {Math.round(score)} Points! ------ Distance error: {Math.round(distanceFromCorrectPlace / 1000)}Km ({Math.round(distanceFromCorrectPlace)}m)</h2>)
             }
         })}
     </div>
@@ -151,7 +156,7 @@ function MyMapComponentResult({
 }
 
 export function RenderMapResult(round_number, pickingTime, playerIndex, docData) {
-  const fenway = { lat: -31.55542202732198, lng: -54.54408893196694 };
+  const fenway = { lat: +10.55542202732198, lng: -54.54408893196694 };
   return (
     <div>
     <Wrapper apiKey="AIzaSyDaopI6hRGw8i5DlhA5lAiCIuZ-qoBH3AE" render={render} libraries={["geometry"]}>
