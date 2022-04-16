@@ -45,7 +45,7 @@ export function EnterRoomForm() {
       }
     }, { merge: true });
 
-    window.location.href = `/match?player=${inputs.username}&room=${inputs.roomName}`
+    window.location.href = `/GeoDuel/match?player=${inputs.username}&room=${inputs.roomName}`
   }
 
   return (

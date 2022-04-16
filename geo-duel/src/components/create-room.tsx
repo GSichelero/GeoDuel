@@ -57,7 +57,7 @@ export function MyForm() {
       currentRound: 'loading'
     });
 
-    window.location.href = `/match?player=${inputs.username}&room=${inputs.roomName}`
+    window.location.href = `/GeoDuel/match?player=${inputs.username}&room=${inputs.roomName}`
   }
 
   const handleChange = (event: any) => {
