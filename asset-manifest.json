@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/GeoDuel/static/css/main.23776e72.css",
-    "main.js": "/GeoDuel/static/js/main.8724d6f9.js",
+    "main.js": "/GeoDuel/static/js/main.32420f81.js",
     "static/js/787.80b2a1cc.chunk.js": "/GeoDuel/static/js/787.80b2a1cc.chunk.js",
     "index.html": "/GeoDuel/index.html",
     "main.23776e72.css.map": "/GeoDuel/static/css/main.23776e72.css.map",
-    "main.8724d6f9.js.map": "/GeoDuel/static/js/main.8724d6f9.js.map",
+    "main.32420f81.js.map": "/GeoDuel/static/js/main.32420f81.js.map",
     "787.80b2a1cc.chunk.js.map": "/GeoDuel/static/js/787.80b2a1cc.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.23776e72.css",
-    "static/js/main.8724d6f9.js"
+    "static/js/main.32420f81.js"
   ]
 }
