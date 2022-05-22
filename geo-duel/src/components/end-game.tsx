@@ -162,7 +162,7 @@ function MyMapComponentEndGame({
             let key = docData['docData']['playersInfo'][player_name];
             for( let i=0; i<Object.keys(key).length; i++ ) {
                 let round = key[Object.keys(key).sort()[i]];
-                for( let j=0; j<=Object.keys(round).length; j++ ) {
+                for( let j=0; j<Object.keys(round['guessings']).length; j++ ) {
                     if (key != docData['docData']['playersInfo'][Object.keys(docData['docData']['playersInfo']).sort()[j]]){
                         let geoPoint: any = Object.values(round['guessings'][`${j + 1}`]);
                         let lat = geoPoint[0];
